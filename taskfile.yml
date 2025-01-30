@@ -1,0 +1,58 @@
+version: 3
+
+tasks:
+  # docker
+  build:
+    cmds:
+      - docker compose up --build -d
+  up:
+    cmds:
+      - docker compose up -d
+  down:
+    cmds:
+      - docker compose down
+  down-v:
+    cmds:
+      - docker compose down --remove-orphans --volumes
+  restart:
+    cmds:
+      - task: down
+      - task: up
+  destroy:
+    cmds:
+      - docker compose down --rmi all --volumes --remove-orphans
+
+  # install / init
+  install:
+    cmds:
+      - task: for-linux-env
+      - task: up
+      - docker compose exec php composer create-project --prefer-dist laravel/laravel .
+      - docker compose exec php php artisan key:generate
+      - docker compose exec php php artisan storage:link
+      - docker compose exec php chmod -R 777 storage bootstrap/cache
+      - task: permissions
+  init:
+    cmds:
+      - task: up
+      - docker compose exec php composer install
+      - docker compose exec php php artisan key:generate
+      - docker compose exec php php artisan storage:link
+      - docker compose exec php chmod -R 777 storage bootstrap/cache
+
+  # artisan
+  migrate:
+    cmd: docker compose exec php php artisan migrate
+  dump-autoload:
+    cmd: docker compose exec php composer dump-autoload
+
+  # other
+  permissions:
+    cmds:
+      - 'sudo chown $USER:$USER app'
+  for-linux-env:
+    cmds:
+      - echo "UID=$(id -u)" >> .env
+      - echo "GID=$(id -g)" >> .env
+  default:
+    - task: up
