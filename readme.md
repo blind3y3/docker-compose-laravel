@@ -10,6 +10,6 @@
 
 Вспомогательные команды  
 `migrate` - php artisan migrate  
-`sump-autoload` - composer dump autoload  
+`dump-autoload` - composer dump autoload  
 
 
